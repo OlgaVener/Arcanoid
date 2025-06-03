@@ -96,29 +96,24 @@ void GameState::updateBallSpeed(float deltaTime)
     }
 }
 
-void GameState::initBricks() 
-{
+void GameState::initBricks() {
     bricks_.clear();
-    const int rows = 3;
-    const int cols = 10;
-    const float brickWidth = 70.f;
-    const float brickHeight = 30.f;
+
     const float startX = 50.f;
     const float startY = 50.f;
+    const float padding = 5.f;
 
-    for (int i = 0; i < rows; ++i) 
-    {
-        for (int j = 0; j < cols; ++j) 
-        {
-            sf::Color color = sf::Color(
-                100 + j * 15,
-                50 + i * 70,
-                150 - i * 30
-            );
+    for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 10; ++col) {
+            int hitPoints = 1;
+            if (row >= 5) hitPoints = 3;
+            else if (row >= 3) hitPoints = 2;
+
+
             bricks_.push_back(std::make_unique<Brick>(
-                startX + j * (brickWidth + 5),
-                startY + i * (brickHeight + 5),
-                brickWidth, brickHeight, color
+                startX + col * (80.f + padding),
+                startY + row * (30.f + padding),
+                hitPoints
             ));
         }
     }
@@ -130,7 +125,7 @@ void GameState::checkCollisions()
     sf::Vector2f ballPos = ball_->getPosition();
     float radius = ball_->getRadius();
 
-    // Window boundaries
+    
     if (ballPos.x <= 0 || ballPos.x + radius * 2 >= winSize.x) 
     {
         ball_->reverseX();
@@ -139,7 +134,6 @@ void GameState::checkCollisions()
         ball_->reverseY();
     }
 
-    // Platform collision
     if (ball_->getGlobalBounds().intersects(platform_->getGlobalBounds())) 
     {
         ball_->reverseY();
@@ -152,9 +146,14 @@ void GameState::checkCollisions()
     {
         if (!brick->isDestroyed() && ball_->getGlobalBounds().intersects(brick->getBounds())) 
         {
-            brick->destroy();
+            brick->hit();
             ball_->reverseY();
-            checkWinCondition();
+
+            // «амен€ем setVelocityX на изменение скорости через getVelocity/setVelocity
+            sf::Vector2f velocity = ball_->getVelocity();
+            float hitPos = (ball_->getPosition().x - brick->getBounds().left) / brick->getBounds().width;
+            velocity.x = (hitPos - 0.5f) * 5.f;
+            ball_->setVelocity(velocity);
             break;
         }
     }
@@ -198,12 +197,17 @@ void GameState::render()
     window_->draw(platform_->getShape());
     window_->draw(ball_->getShape());
 
-    for (const auto& brick : bricks_) 
+    for (const auto& brick : bricks_)
     {
         brick->draw(*window_);
+
+        window_->draw(ball_->getShape());
+        window_->draw(platform_->getShape());
+
     }
 
-    if (gameWon_) {
+    if (gameWon_) 
+    {
         window_->draw(winText_);
     }
 

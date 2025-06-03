@@ -1,15 +1,17 @@
-#include "GameObject.h"
+#include <SFML/Graphics.hpp>
 
-class Brick : public GameObject {
+class Brick {
 public:
-    Brick(float x, float y, float width, float height, sf::Color color);
+    Brick(float x, float y, int hitPoints);
 
-    void draw(sf::RenderWindow& window) const override;
-    sf::FloatRect getBounds() const override;
+    void draw(sf::RenderWindow& window) const;
+    sf::FloatRect getBounds() const;
     bool isDestroyed() const;
-    void destroy();
+    void hit();
+    sf::Color getColor() const;
 
 private:
     sf::RectangleShape shape_;
+    int hitPoints_;
     bool destroyed_ = false;
 };
