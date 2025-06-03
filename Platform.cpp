@@ -8,15 +8,21 @@ Platform::Platform(float x, float y, float width, float height)
     shape_.setFillColor(sf::Color::White);
 }
 
-void Platform::move(float offset) 
+void Platform::setPosition(float x, float y) 
 {
-    position_.x += offset;
+    position_.x = x;
+    position_.y = y;
     shape_.setPosition(position_);
 }
 
-void Platform::setPosition(float x) 
+sf::Vector2f Platform::getPosition() const 
 {
-    position_.x = x;
+    return position_;
+}
+
+void Platform::move(float offset) 
+{
+    position_.x += offset;
     shape_.setPosition(position_);
 }
 

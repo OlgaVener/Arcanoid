@@ -9,10 +9,12 @@ GameState::GameState(unsigned int width, unsigned int height) :
     window_->setFramerateLimit(60);
 }
 
-void GameState::run() {
+void GameState::run() 
+{
     sf::Clock clock;
 
-    while (window_->isOpen()) {
+    while (window_->isOpen()) 
+    {
         float deltaTime = clock.restart().asSeconds();
 
         handleEvents();
@@ -21,49 +23,66 @@ void GameState::run() {
     }
 }
 
-void GameState::handleEvents() {
+void GameState::handleEvents() 
+{
     sf::Event event;
-    while (window_->pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
+    while (window_->pollEvent(event)) 
+    {
+        if (event.type == sf::Event::Closed) 
+        {
             window_->close();
         }
     }
 }
 
-void GameState::update(float deltaTime) {
+void GameState::update(float deltaTime) 
+{
     handleInput();
     updateBall(deltaTime); 
     updateBallSpeed(deltaTime);
 }
 
-void GameState::handleInput() {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+void GameState::handleInput() 
+{
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) 
+    {
         platform_->move(-platformSpeed_);
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) 
+    {
         platform_->move(platformSpeed_);
     }
 
-    // Platform boundary check
     sf::Vector2u winSize = window_->getSize();
     sf::FloatRect bounds = platform_->getGlobalBounds();
-    if (bounds.left < 0) {
-        platform_->setPosition(0);
+
+    if (bounds.left < 0.0f) 
+    {
+        platform_->setPosition(0.0f, platform_->getPosition().y);
     }
-    if (bounds.left + bounds.width > winSize.x) {
-        platform_->setPosition(winSize.x - bounds.width);
+
+    // Исправленная строка 183:
+    if (bounds.left + bounds.width > static_cast<float>(winSize.x))
+    {
+        platform_->setPosition(
+            static_cast<float>(winSize.x) - bounds.width,
+            platform_->getPosition().y
+        );
     }
 }
 
-void GameState::updateBall(float deltaTime) {
+void GameState::updateBall(float deltaTime) 
+{
     ball_->update(deltaTime);
     checkCollisions();
 }
 
-void GameState::updateBallSpeed(float deltaTime) {
+void GameState::updateBallSpeed(float deltaTime) 
+{
     ballSpeedChangeTimer_ += deltaTime;
 
-    if (ballSpeedChangeTimer_ >= ballSpeedChangeInterval_) {
+    if (ballSpeedChangeTimer_ >= ballSpeedChangeInterval_) 
+    {
         ballSpeedChangeTimer_ = 0.0f;
 
         float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -77,13 +96,43 @@ void GameState::updateBallSpeed(float deltaTime) {
     }
 }
 
-void GameState::checkCollisions() {
+void GameState::initBricks() 
+{
+    bricks_.clear();
+    const int rows = 3;
+    const int cols = 10;
+    const float brickWidth = 70.f;
+    const float brickHeight = 30.f;
+    const float startX = 50.f;
+    const float startY = 50.f;
+
+    for (int i = 0; i < rows; ++i) 
+    {
+        for (int j = 0; j < cols; ++j) 
+        {
+            sf::Color color = sf::Color(
+                100 + j * 15,
+                50 + i * 70,
+                150 - i * 30
+            );
+            bricks_.push_back(std::make_unique<Brick>(
+                startX + j * (brickWidth + 5),
+                startY + i * (brickHeight + 5),
+                brickWidth, brickHeight, color
+            ));
+        }
+    }
+}
+
+void GameState::checkCollisions() 
+{
     sf::Vector2u winSize = window_->getSize();
     sf::Vector2f ballPos = ball_->getPosition();
     float radius = ball_->getRadius();
 
     // Window boundaries
-    if (ballPos.x <= 0 || ballPos.x + radius * 2 >= winSize.x) {
+    if (ballPos.x <= 0 || ballPos.x + radius * 2 >= winSize.x) 
+    {
         ball_->reverseX();
     }
     if (ballPos.y <= 0) {
@@ -91,24 +140,72 @@ void GameState::checkCollisions() {
     }
 
     // Platform collision
-    if (ball_->getGlobalBounds().intersects(platform_->getGlobalBounds())) {
+    if (ball_->getGlobalBounds().intersects(platform_->getGlobalBounds())) 
+    {
         ball_->reverseY();
         float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
         float bounceEffect = 0.9f + random * 0.2f;
         ball_->setSpeedMultiplier(ball_->getSpeedMultiplier() * bounceEffect);
     }
+
+    for (auto& brick : bricks_) 
+    {
+        if (!brick->isDestroyed() && ball_->getGlobalBounds().intersects(brick->getBounds())) 
+        {
+            brick->destroy();
+            ball_->reverseY();
+            checkWinCondition();
+            break;
+        }
+    }
 }
 
-void GameState::render() {
-    window_->clear(sf::Color::Black);
+void GameState::checkWinCondition() 
+{
+    bool allDestroyed = true;
+    for (const auto& brick : bricks_) 
+    {
+        if (!brick->isDestroyed()) 
+        {
+            allDestroyed = false;
+            break;
+        }
+    }
 
-    std::string speedInfo = "Ball speed: " +
-        std::to_string(baseBallSpeed_ * ball_->getSpeedMultiplier()).substr(0, 4) +
-        " (base " + std::to_string((int)baseBallSpeed_) + ")";
-    speedInfoText_.setString(speedInfo);
+    if (allDestroyed) 
+    {
+        gameWon_ = true;
+        winText_.setString("Поздравляем! Вы выиграли!\nХотите сыграть еще? (Y/N)");
+        winText_.setPosition(
+            window_->getSize().x / 2 - winText_.getGlobalBounds().width / 2,
+            window_->getSize().y / 2 - winText_.getGlobalBounds().height / 2
+        );
+    }
+}
+
+void GameState::resetGame() 
+{
+    initBricks();
+    ball_->reset(window_->getSize().x / 2, window_->getSize().y / 2);
+    platform_->setPosition(0.0f, platform_->getPosition().y);
+    gameWon_ = false;
+}
+
+void GameState::render() 
+{
+    window_->clear(sf::Color::Black);
 
     window_->draw(platform_->getShape());
     window_->draw(ball_->getShape());
-    window_->draw(speedInfoText_);
+
+    for (const auto& brick : bricks_) 
+    {
+        brick->draw(*window_);
+    }
+
+    if (gameWon_) {
+        window_->draw(winText_);
+    }
+
     window_->display();
 }

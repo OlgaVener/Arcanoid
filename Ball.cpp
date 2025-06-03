@@ -19,6 +19,13 @@ void Ball::setSpeedMultiplier(float multiplier) {
     speedMultiplier_ = multiplier;
 }
 
+void Ball::reset(float x, float y) {
+    position_ = sf::Vector2f(x, y);
+    baseVelocity_ = sf::Vector2f(8.0f, -8.0f);
+    speedMultiplier_ = 1.0f;
+    shape_.setPosition(position_);
+}
+
 // Реализации методов, которые были перенесены из заголовка
 const sf::CircleShape& Ball::getShape() const {
     return shape_;

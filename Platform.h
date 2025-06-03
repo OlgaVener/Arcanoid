@@ -1,14 +1,14 @@
 #include <SFML/Graphics.hpp>
 
-class Platform 
-{
+class Platform {
 public:
     Platform(float x, float y, float width, float height);
 
     void move(float offset);
-    void setPosition(float x);
+    void setPosition(float x, float y);
     const sf::RectangleShape& getShape() const;
     sf::FloatRect getGlobalBounds() const;
+    sf::Vector2f getPosition() const;
 
 private:
     sf::Vector2f position_;

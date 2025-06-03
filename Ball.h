@@ -5,6 +5,7 @@ public:
     Ball(float x, float y, float radius);
 
     void update(float deltaTime);
+    void reset(float x, float y);
     void reverseX() { baseVelocity_.x = -baseVelocity_.x; }
     void reverseY() { baseVelocity_.y = -baseVelocity_.y; }
     void setSpeedMultiplier(float multiplier);

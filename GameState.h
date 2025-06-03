@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
+#include <vector>
 #include <memory>
 #include "Platform.h"
 #include "Ball.h"
+#include "Brick.h"
 
 class GameState {
 public:
@@ -18,6 +20,14 @@ private:
     void updateBall(float deltaTime);
     void updateBallSpeed(float deltaTime);
     void checkCollisions();
+    void initBricks();
+    void checkWinCondition();
+    void resetGame();
+
+    std::vector<std::unique_ptr<Brick>> bricks_;
+    bool gameWon_ = false;
+    sf::Text winText_;
+
 
     std::unique_ptr<sf::RenderWindow> window_;
     std::unique_ptr<Platform> platform_;
