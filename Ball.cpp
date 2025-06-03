@@ -31,10 +31,6 @@ const sf::CircleShape& Ball::getShape() const {
     return shape_;
 }
 
-sf::FloatRect Ball::getGlobalBounds() const {
-    return shape_.getGlobalBounds();
-}
-
 const sf::Vector2f& Ball::getPosition() const {
     return position_;
 }

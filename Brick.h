@@ -6,6 +6,7 @@ public:
 
     void draw(sf::RenderWindow& window) const;
     sf::FloatRect getBounds() const;
+    void destroy();
     bool isDestroyed() const;
     void hit();
     sf::Color getColor() const;
