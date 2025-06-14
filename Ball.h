@@ -9,9 +9,11 @@ public:
     void reverseX() { baseVelocity_.x = -baseVelocity_.x; }
     void reverseY() { baseVelocity_.y = -baseVelocity_.y; }
     void setSpeedMultiplier(float multiplier);
+    void setPosition(float x, float y);
+
 
     sf::FloatRect getGlobalBounds() const { return shape_.getGlobalBounds(); }
-    void setVelocity(const sf::Vector2f& velocity) { baseVelocity_ = velocity; }
+    void setVelocity(const sf::Vector2f& velocity);
     sf::Vector2f getVelocity() const { return baseVelocity_; }
 
     const sf::CircleShape& getShape() const;
@@ -20,6 +22,7 @@ public:
     float getSpeedMultiplier() const;
 
 private:
+    void maintainCircleShape();
     sf::Vector2f position_;
     sf::Vector2f baseVelocity_;
     float speedMultiplier_;

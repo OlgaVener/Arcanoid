@@ -1,14 +1,13 @@
 #include "Brick.h"
 
-Brick::Brick(float x, float y, int hitPoints)
-    : hitPoints_(hitPoints) {
+Brick::Brick(float x, float y, int hitPoints) {
     shape_.setSize(sf::Vector2f(80.f, 30.f));
     shape_.setPosition(x, y);
     shape_.setOutlineThickness(1.f);
     shape_.setOutlineColor(sf::Color::Black);
 
-    switch (hitPoints) 
-    {
+    // Установка цвета в конструкторе
+    switch (hitPoints) {
     case 1: shape_.setFillColor(sf::Color::Green); break;
     case 2: shape_.setFillColor(sf::Color::Yellow); break;
     case 3: shape_.setFillColor(sf::Color::Red); break;

@@ -1,4 +1,5 @@
 #include "Ball.h"
+#include <algorithm>
 
 Ball::Ball(float x, float y, float radius)
     : position_{ x, y },
@@ -10,20 +11,48 @@ Ball::Ball(float x, float y, float radius)
     shape_.setFillColor(sf::Color::Red);
 }
 
+void Ball::setVelocity(const sf::Vector2f& velocity) {
+    // Сохраняем направление, но ограничиваем скорость
+    float length = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    if (length > 0) {
+        float minSpeed = 200.f;
+        float maxSpeed = 500.f;
+        float targetSpeed = std::max(minSpeed, std::min(maxSpeed, length));
+        baseVelocity_ = (velocity / length) * targetSpeed;
+    }
+}
+
+void Ball::maintainCircleShape() {
+    float radius = shape_.getRadius();
+    shape_.setRadius(radius);
+    shape_.setOrigin(radius, radius);
+}
+
 void Ball::update(float deltaTime) {
     position_ += baseVelocity_ * deltaTime;
+    
+    // Сохраняем круглую форму
+    shape_.setRadius(radius_);
+    shape_.setOrigin(radius_, radius_);
     shape_.setPosition(position_);
 }
+
 
 void Ball::setSpeedMultiplier(float multiplier) {
     speedMultiplier_ = multiplier;
 }
 
+void Ball::setPosition(float x, float y) {
+    position_.x = x;
+    position_.y = y;
+    shape_.setPosition(position_);
+}
+
+
 void Ball::reset(float x, float y) {
-    position_ = sf::Vector2f(x, y);
+    setPosition(x, y); // Используем новый метод
     baseVelocity_ = sf::Vector2f(8.0f, -8.0f);
     speedMultiplier_ = 1.0f;
-    shape_.setPosition(position_);
 }
 
 // Реализации методов, которые были перенесены из заголовка

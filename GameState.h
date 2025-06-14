@@ -20,6 +20,7 @@ private:
     void updateBall(float deltaTime);
     void updateBallSpeed(float deltaTime);
     void checkCollisions();
+    void checkLoseCondition();
     void initBricks();
     void checkWinCondition();
     void resetGame();
@@ -35,11 +36,11 @@ private:
     sf::Text speedInfoText_;
     sf::Font font_;
 
-    const float platformSpeed_ = 3.5f;
-    const float baseBallSpeed_ = 250.0f;
+    const float platformSpeed_ = 5.0f;
+    const float baseBallSpeed_ = 280.f;
+    const float minBallSpeedMultiplier_ = 0.8f;
+    const float maxBallSpeedMultiplier_ = 1.5f;
     float ballSpeedChangeTimer_ = 0.0f;
     const float ballSpeedChangeInterval_ = 1.0f;
     float currentBallSpeedMultiplier_ = 1.0f;
-    const float minBallSpeedMultiplier_ = 1.0f;
-    const float maxBallSpeedMultiplier_ = 1.2f;
 };
