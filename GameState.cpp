@@ -7,14 +7,22 @@ GameState::GameState(unsigned int width, unsigned int height) :
     ball_(std::make_unique<Ball>(width / 2, height / 2, 10))
 {
     window_->setFramerateLimit(60);
+
+    if (!font_.loadFromFile("arial.ttf")) {
+        // Обработка ошибки загрузки шрифта
+    }
+
+    winText_.setFont(font_);
+    winText_.setCharacterSize(30);
+    winText_.setFillColor(sf::Color::White);
+
+    initBricks();
 }
 
-void GameState::run() 
-{
+void GameState::run() {
     sf::Clock clock;
 
-    while (window_->isOpen()) 
-    {
+    while (window_->isOpen()) {
         float deltaTime = clock.restart().asSeconds();
 
         handleEvents();
@@ -23,47 +31,46 @@ void GameState::run()
     }
 }
 
-void GameState::handleEvents() 
-{
+void GameState::handleEvents() {
     sf::Event event;
-    while (window_->pollEvent(event)) 
-    {
-        if (event.type == sf::Event::Closed) 
-        {
+    while (window_->pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
             window_->close();
+        }
+
+        if (gameWon_ && event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Y) {
+                resetGame();
+            }
+            else if (event.key.code == sf::Keyboard::N) {
+                window_->close();
+            }
         }
     }
 }
 
-void GameState::update(float deltaTime) 
-{
+void GameState::update(float deltaTime) {
     handleInput();
-    updateBall(deltaTime); 
+    updateBall(deltaTime);
     updateBallSpeed(deltaTime);
 }
 
-void GameState::handleInput() 
-{
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) 
-    {
+void GameState::handleInput() {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
         platform_->move(-platformSpeed_);
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) 
-    {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         platform_->move(platformSpeed_);
     }
 
     sf::Vector2u winSize = window_->getSize();
     sf::FloatRect bounds = platform_->getGlobalBounds();
 
-    if (bounds.left < 0.0f) 
-    {
+    if (bounds.left < 0.0f) {
         platform_->setPosition(0.0f, platform_->getPosition().y);
     }
 
-    // Исправленная строка 183:
-    if (bounds.left + bounds.width > static_cast<float>(winSize.x))
-    {
+    if (bounds.left + bounds.width > static_cast<float>(winSize.x)) {
         platform_->setPosition(
             static_cast<float>(winSize.x) - bounds.width,
             platform_->getPosition().y
@@ -71,18 +78,15 @@ void GameState::handleInput()
     }
 }
 
-void GameState::updateBall(float deltaTime) 
-{
+void GameState::updateBall(float deltaTime) {
     ball_->update(deltaTime);
     checkCollisions();
 }
 
-void GameState::updateBallSpeed(float deltaTime) 
-{
+void GameState::updateBallSpeed(float deltaTime) {
     ballSpeedChangeTimer_ += deltaTime;
 
-    if (ballSpeedChangeTimer_ >= ballSpeedChangeInterval_) 
-    {
+    if (ballSpeedChangeTimer_ >= ballSpeedChangeInterval_) {
         ballSpeedChangeTimer_ = 0.0f;
 
         float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -109,7 +113,6 @@ void GameState::initBricks() {
             if (row >= 5) hitPoints = 3;
             else if (row >= 3) hitPoints = 2;
 
-
             bricks_.push_back(std::make_unique<Brick>(
                 startX + col * (80.f + padding),
                 startY + row * (30.f + padding),
@@ -119,60 +122,79 @@ void GameState::initBricks() {
     }
 }
 
-void GameState::checkCollisions() 
-{
+void GameState::checkCollisions() {
     sf::Vector2u winSize = window_->getSize();
     sf::Vector2f ballPos = ball_->getPosition();
     float radius = ball_->getRadius();
 
-    
-    if (ballPos.x <= 0 || ballPos.x + radius * 2 >= winSize.x) 
-    {
+    // Столкновение со стенами
+    if (ballPos.x <= 0 || ballPos.x + radius * 2 >= winSize.x) {
         ball_->reverseX();
     }
     if (ballPos.y <= 0) {
         ball_->reverseY();
     }
 
-    if (ball_->getGlobalBounds().intersects(platform_->getGlobalBounds())) 
-    {
+    // Столкновение с платформой
+    if (ball_->getGlobalBounds().intersects(platform_->getGlobalBounds())) {
         ball_->reverseY();
         float random = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
         float bounceEffect = 0.9f + random * 0.2f;
         ball_->setSpeedMultiplier(ball_->getSpeedMultiplier() * bounceEffect);
     }
 
-    for (auto& brick : bricks_) 
-    {
-        if (!brick->isDestroyed() && ball_->getGlobalBounds().intersects(brick->getBounds())) 
-        {
+    // Столкновение с блоками
+    for (auto& brick : bricks_) {
+        if (!brick->isDestroyed() && ball_->getGlobalBounds().intersects(brick->getBounds())) {
             brick->hit();
-            ball_->reverseY();
 
-            // Заменяем setVelocityX на изменение скорости через getVelocity/setVelocity
-            sf::Vector2f velocity = ball_->getVelocity();
-            float hitPos = (ball_->getPosition().x - brick->getBounds().left) / brick->getBounds().width;
-            velocity.x = (hitPos - 0.5f) * 5.f;
-            ball_->setVelocity(velocity);
+            sf::FloatRect ballBounds = ball_->getGlobalBounds();
+            sf::FloatRect brickBounds = brick->getBounds();
+
+            float ballLeft = ballBounds.left;
+            float ballRight = ballBounds.left + ballBounds.width;
+            float ballTop = ballBounds.top;
+            float ballBottom = ballBounds.top + ballBounds.height;
+
+            float brickLeft = brickBounds.left;
+            float brickRight = brickBounds.left + brickBounds.width;
+            float brickTop = brickBounds.top;
+            float brickBottom = brickBounds.top + brickBounds.height;
+
+            float overlapLeft = ballRight - brickLeft;
+            float overlapRight = brickRight - ballLeft;
+            float overlapTop = ballBottom - brickTop;
+            float overlapBottom = brickBottom - ballTop;
+
+            bool fromLeft = overlapLeft < overlapRight && overlapLeft < overlapTop && overlapLeft < overlapBottom;
+            bool fromRight = overlapRight < overlapLeft && overlapRight < overlapTop && overlapRight < overlapBottom;
+            bool fromTop = overlapTop < overlapLeft && overlapTop < overlapRight && overlapTop < overlapBottom;
+            bool fromBottom = overlapBottom < overlapLeft && overlapBottom < overlapRight && overlapBottom < overlapTop;
+
+            if (fromLeft || fromRight) {
+                ball_->reverseX();
+            }
+            if (fromTop || fromBottom) {
+                ball_->reverseY();
+            }
+
             break;
         }
     }
+
+    checkWinCondition();
 }
 
-void GameState::checkWinCondition() 
-{
+void GameState::checkWinCondition() {
     bool allDestroyed = true;
-    for (const auto& brick : bricks_) 
-    {
-        if (!brick->isDestroyed()) 
-        {
+    for (const auto& brick : bricks_) {
+        if (!brick->isDestroyed()) {
             allDestroyed = false;
             break;
         }
     }
 
-    if (allDestroyed) 
-    {
+    if (allDestroyed) {
         gameWon_ = true;
         winText_.setString("Поздравляем! Вы выиграли!\nХотите сыграть еще? (Y/N)");
         winText_.setPosition(
@@ -182,32 +204,24 @@ void GameState::checkWinCondition()
     }
 }
 
-void GameState::resetGame() 
-{
+void GameState::resetGame() {
     initBricks();
     ball_->reset(window_->getSize().x / 2, window_->getSize().y / 2);
-    platform_->setPosition(0.0f, platform_->getPosition().y);
+    platform_->setPosition(window_->getSize().x / 2 - 50, window_->getSize().y - 30);
     gameWon_ = false;
 }
 
-void GameState::render() 
-{
+void GameState::render() {
     window_->clear(sf::Color::Black);
 
-    window_->draw(platform_->getShape());
-    window_->draw(ball_->getShape());
-
-    for (const auto& brick : bricks_)
-    {
+    for (const auto& brick : bricks_) {
         brick->draw(*window_);
-
-        window_->draw(ball_->getShape());
-        window_->draw(platform_->getShape());
-
     }
 
-    if (gameWon_) 
-    {
+    window_->draw(ball_->getShape());
+    window_->draw(platform_->getShape());
+
+    if (gameWon_) {
         window_->draw(winText_);
     }
 

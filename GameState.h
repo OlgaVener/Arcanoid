@@ -28,7 +28,6 @@ private:
     bool gameWon_ = false;
     sf::Text winText_;
 
-
     std::unique_ptr<sf::RenderWindow> window_;
     std::unique_ptr<Platform> platform_;
     std::unique_ptr<Ball> ball_;
