@@ -24,17 +24,23 @@ private:
     void initBricks();
     void checkWinCondition();
     void resetGame();
+    void showLoseScreen();
+    void handleLoseScreenInput();
+    void showWinScreen();
+    void handleWinScreenInput();
 
     std::vector<std::unique_ptr<Brick>> bricks_;
     bool gameWon_ = false;
+    bool gameLost_ = false;
     sf::Text winText_;
+    sf::Text loseText_;
+    sf::Font font_;
+    sf::Text speedInfoText_;
 
     std::unique_ptr<sf::RenderWindow> window_;
     std::unique_ptr<Platform> platform_;
     std::unique_ptr<Ball> ball_;
 
-    sf::Text speedInfoText_;
-    sf::Font font_;
 
     const float platformSpeed_ = 5.0f;
     const float baseBallSpeed_ = 280.f;

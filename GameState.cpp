@@ -2,7 +2,10 @@
 #include <string>
 
 GameState::GameState(unsigned int width, unsigned int height) :
-    window_(std::make_unique<sf::RenderWindow>(sf::VideoMode(width, height), "Arkanoid")),
+    window_(std::make_unique<sf::RenderWindow>(
+        sf::VideoMode(800, 600),  // Фиксированное разрешение
+        "Arkanoid",
+        sf::Style::Titlebar | sf::Style::Close)),  // Закрывающая скобка для make_unique
     platform_(std::make_unique<Platform>(width / 2 - 50, height - 50, 100, 20)),
     ball_(std::make_unique<Ball>(width / 2, height - 100, 10.f))
 {
@@ -20,6 +23,30 @@ GameState::GameState(unsigned int width, unsigned int height) :
         // Обработка ошибки
     }
 
+    loseText_.setFont(font_);
+    loseText_.setCharacterSize(40);
+    loseText_.setFillColor(sf::Color::White);
+    loseText_.setString(
+        "Game Over!\n"
+        "Try again?\n"
+        "(Y - Yes, N - No)"
+    );
+    sf::FloatRect loseBounds = loseText_.getLocalBounds();
+    loseText_.setOrigin(loseBounds.width / 2, loseBounds.height / 2);
+    loseText_.setPosition(400, 300);
+
+    winText_.setFont(font_);
+    winText_.setCharacterSize(40);
+    winText_.setFillColor(sf::Color::White);
+    winText_.setString(
+        "Congratulations! You won!\n"
+        "Play again?\n"
+        "(Y - Yes, N - No)"
+    );
+    sf::FloatRect winBounds = winText_.getLocalBounds();
+    winText_.setOrigin(winBounds.width / 2, winBounds.height / 2);
+    winText_.setPosition(400, 300);
+
     initBricks();
 }
 
@@ -30,9 +57,19 @@ void GameState::run() {
     while (window_->isOpen()) {
         float deltaTime = clock.restart().asSeconds();
 
-        handleEvents();
-        update(deltaTime);
-        render();
+        if (gameWon_) {
+            handleWinScreenInput();
+            showWinScreen();
+        }
+        else if (gameLost_) {
+            handleLoseScreenInput();
+            showLoseScreen();
+        }
+        else {
+            handleEvents();
+            update(deltaTime);
+            render();
+        }
     }
 }
 
@@ -192,8 +229,8 @@ void GameState::checkCollisions() {
 }
 
 void GameState::checkLoseCondition() {
-    if (ball_->getPosition().y + ball_->getRadius() >= 600) {
-        resetGame();
+    if (ball_->getPosition().y - ball_->getRadius() > 600) {  // Мяч упал ниже экрана
+        gameLost_ = true;
     }
 }
 
@@ -208,19 +245,76 @@ void GameState::checkWinCondition() {
 
     if (allDestroyed) {
         gameWon_ = true;
-        winText_.setString("Поздравляем! Вы выиграли!\nХотите сыграть еще? (Y/N)");
-        winText_.setPosition(
-            window_->getSize().x / 2 - winText_.getGlobalBounds().width / 2,
-            window_->getSize().y / 2 - winText_.getGlobalBounds().height / 2
-        );
+        // Центрируем текст
+        sf::FloatRect textBounds = winText_.getLocalBounds();
+        winText_.setOrigin(textBounds.width / 2, textBounds.height / 2);
+        winText_.setPosition(window_->getSize().x / 2, window_->getSize().y / 2);
+    }
+}
+
+void GameState::showLoseScreen() {
+    window_->clear(sf::Color::Black);
+    window_->draw(loseText_);
+    window_->display();
+}
+
+void GameState::handleLoseScreenInput() {
+    sf::Event event;
+    while (window_->pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+            window_->close();
+        }
+        else if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Y) {
+                resetGame();
+            }
+            else if (event.key.code == sf::Keyboard::N) {
+                window_->close();
+            }
+        }
+    }
+}
+
+void GameState::showWinScreen() {
+    window_->clear(sf::Color::Black);
+    window_->draw(winText_);
+    window_->display();
+}
+
+void GameState::handleWinScreenInput() {
+    sf::Event event;
+    while (window_->pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+            window_->close();
+        }
+        else if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Y) {
+                resetGame();
+            }
+            else if (event.key.code == sf::Keyboard::N) {
+                // Возврат в меню или закрытие
+                window_->close();
+            }
+        }
     }
 }
 
 void GameState::resetGame() {
+    // Полный сброс игры
     initBricks();
-    ball_->reset(window_->getSize().x / 2, window_->getSize().y / 2);
-    platform_->setPosition(window_->getSize().x / 2 - 50, window_->getSize().y - 30);
+
+    // Сброс мяча
+    ball_->reset(400, 300);  // Центр экрана
+    ball_->setVelocity(sf::Vector2f(180.f, -220.f));
+
+    // Сброс платформы
+    platform_->setPosition(350, 550);  // 800/2 - 50, 600-50
+
+    // Сброс состояний
     gameWon_ = false;
+    gameLost_ = false;
+    currentBallSpeedMultiplier_ = 1.0f;
+    ballSpeedChangeTimer_ = 0.0f;
 }
 
 void GameState::render() {
