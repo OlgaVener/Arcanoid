@@ -2,19 +2,24 @@
 
 class Brick {
 public:
-    Brick(float x, float y, int hitPoints);
+    enum class Type {
+        Normal,    // Обычный (1 удар)
+        Strong,    // Прочный (3 удара)
+        Glass      // Стеклянный (1 удар, мяч не отскакивает)
+    };
 
-    void draw(sf::RenderWindow& window) const;
-    void setColor(const sf::Color& color);
-    void setOutline(float thickness, const sf::Color& color);
-    sf::FloatRect getBounds() const;
-    void destroy();
-    bool isDestroyed() const;
+    Brick(float x, float y, Type type);
+
     void hit();
-    sf::Color getColor() const;
+    bool isDestroyed() const;
+    void draw(sf::RenderWindow& window) const;
+    sf::FloatRect getBounds() const;
+    bool shouldBallBounce() const;
+    Type getType() const { return type_; }
 
 private:
     sf::RectangleShape shape_;
+    Type type_;
     int hitPoints_;
     bool destroyed_ = false;
 };

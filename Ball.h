@@ -10,6 +10,7 @@ public:
     void reverseY() { baseVelocity_.y = -baseVelocity_.y; }
     void setSpeedMultiplier(float multiplier);
     void setPosition(float x, float y);
+    void setColor(const sf::Color& color);
 
 
     sf::FloatRect getGlobalBounds() const { return shape_.getGlobalBounds(); }

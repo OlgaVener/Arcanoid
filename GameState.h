@@ -8,6 +8,7 @@
 class GameState {
 public:
     GameState(unsigned int width, unsigned int height);
+    void centerText(sf::Text& text);
     ~GameState() = default;
 
     void run();
@@ -20,6 +21,7 @@ private:
     void updateBall(float deltaTime);
     void updateBallSpeed(float deltaTime);
     void checkCollisions();
+    void checkGameConditions();
     void checkLoseCondition();
     void initBricks();
     void checkWinCondition();

@@ -64,6 +64,10 @@ void Ball::setPosition(float x, float y) {
     shape_.setPosition(position_);
 }
 
+void Ball::setColor(const sf::Color& color) {
+    shape_.setFillColor(color);
+}
+
 void Ball::reset(float x, float y) {
     position_.x = x;
     position_.y = y;
