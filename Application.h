@@ -1,11 +1,10 @@
+#pragma once
 #include <memory>
 #include "GameState.h"
 
-class Application 
-{
+class Application {
 public:
     Application();
-    ~Application();
     void run();
 
 private:

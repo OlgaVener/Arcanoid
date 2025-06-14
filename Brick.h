@@ -1,25 +1,27 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 
 class Brick {
 public:
-    enum class Type {
-        Normal,    // Обычный (1 удар)
-        Strong,    // Прочный (3 удара)
-        Glass      // Стеклянный (1 удар, мяч не отскакивает)
-    };
+    enum class Type { Normal, Strong, Glass };
 
-    Brick(float x, float y, Type type);
+    Brick();
+
+    void setPosition(float x, float y);
+    void setType(Type type);
+    void setTexture(const sf::Texture& texture);
 
     void hit();
     bool isDestroyed() const;
+    bool shouldBallBounce() const;
+
     void draw(sf::RenderWindow& window) const;
     sf::FloatRect getBounds() const;
-    bool shouldBallBounce() const;
-    Type getType() const { return type_; }
+    Type getType() const;
 
 private:
-    sf::RectangleShape shape_;
     Type type_;
     int hitPoints_;
-    bool destroyed_ = false;
+    bool destroyed_;
+    sf::Sprite sprite_;
 };

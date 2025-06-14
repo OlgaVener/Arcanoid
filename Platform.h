@@ -1,17 +1,20 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 
 class Platform {
 public:
-    Platform(float x, float y, float width, float height);
+    Platform(float width = 100.f, float height = 20.f);
 
-    void move(float offset);
     void setPosition(float x, float y);
-    const sf::RectangleShape& getShape() const;
-    sf::FloatRect getGlobalBounds() const;
     sf::Vector2f getPosition() const;
+    void move(float offset);
+    void setTexture(const sf::Texture& texture);
+
+    const sf::Sprite& getSprite() const;
+    sf::FloatRect getGlobalBounds() const;
 
 private:
-    sf::Vector2f position_;
-    sf::Vector2f size_;
-    sf::RectangleShape shape_;
+    sf::Sprite sprite_;
+    float width_;
+    float height_;
 };

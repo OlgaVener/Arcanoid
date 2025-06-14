@@ -1,37 +1,31 @@
 #include "Platform.h"
 
-Platform::Platform(float x, float y, float width, float height)
-    : position_{ x, y }, size_{ width, height } 
-{
-    shape_.setSize(size_);
-    shape_.setPosition(position_);
-    shape_.setFillColor(sf::Color::White);
+Platform::Platform(float width, float height) :
+    width_(width),
+    height_(height) {}
+
+void Platform::setPosition(float x, float y) {
+    sprite_.setPosition(x, y);
 }
 
-void Platform::setPosition(float x, float y) 
-{
-    position_.x = x;
-    position_.y = y;
-    shape_.setPosition(position_);
+sf::Vector2f Platform::getPosition() const {
+    return sprite_.getPosition();
 }
 
-sf::Vector2f Platform::getPosition() const 
-{
-    return position_;
+void Platform::move(float offset) {
+    sprite_.move(offset, 0);
 }
 
-void Platform::move(float offset) 
-{
-    position_.x += offset;
-    shape_.setPosition(position_);
+void Platform::setTexture(const sf::Texture& texture) {
+    sprite_.setTexture(texture);
+    sf::FloatRect bounds = sprite_.getLocalBounds();
+    sprite_.setScale(width_ / bounds.width, height_ / bounds.height);
 }
 
-const sf::RectangleShape& Platform::getShape() const 
-{
-    return shape_;
+const sf::Sprite& Platform::getSprite() const {
+    return sprite_;
 }
 
-sf::FloatRect Platform::getGlobalBounds() const 
-{
-    return shape_.getGlobalBounds();
+sf::FloatRect Platform::getGlobalBounds() const {
+    return sprite_.getGlobalBounds();
 }
