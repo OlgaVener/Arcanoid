@@ -38,6 +38,10 @@ void Brick::draw(sf::RenderWindow& window) const {
     }
 }
 
+const sf::Sprite& Brick::getSprite() const {
+    return sprite_;
+}
+
 sf::FloatRect Brick::getBounds() const {
     return sprite_.getGlobalBounds();
 }

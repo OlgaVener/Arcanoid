@@ -20,6 +20,7 @@ void Platform::setTexture(const sf::Texture& texture) {
     sprite_.setTexture(texture);
     sf::FloatRect bounds = sprite_.getLocalBounds();
     sprite_.setScale(width_ / bounds.width, height_ / bounds.height);
+    sprite_.setColor(sf::Color::White);
 }
 
 const sf::Sprite& Platform::getSprite() const {

@@ -1,4 +1,3 @@
-#pragma once
 #include <SFML/Graphics.hpp>
 
 class Brick {
@@ -16,6 +15,7 @@ public:
     bool shouldBallBounce() const;
 
     void draw(sf::RenderWindow& window) const;
+    const sf::Sprite& getSprite() const;  // Добавлен новый метод
     sf::FloatRect getBounds() const;
     Type getType() const;
 

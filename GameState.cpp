@@ -56,16 +56,20 @@ void GameState::loadResources() {
 }
 
 void GameState::initGameObjects() {
+    // Настройка фона
+    background_.setTexture(textureManager.get("background"));
+    background_.setColor(sf::Color::White); // Убедимся, что фон не затемнен
+
     // Настройка мяча
     ball_->setPosition(400, 500);
-    ball_->setVelocity(sf::Vector2f(180.f, -220.f)); // Исправлено - явное создание Vector2f
+    ball_->setVelocity(sf::Vector2f(180.f, -220.f));
     ball_->setTexture(textureManager.get("ball"));
+    ball_->setColor(sf::Color::White); // Убираем красный цвет
 
     // Настройка платформы
     platform_->setPosition(350, 550);
     platform_->setTexture(textureManager.get("platform"));
 
-    // Инициализация блоков
     initBricks();
 }
 
@@ -169,11 +173,11 @@ void GameState::updateBallSpeed(float deltaTime) {
             currentBallSpeedMultiplier_ * 1.05f
         );
 
-        // Визуальная индикация ускорения
+        // Визуальная индикация ускорения через scale вместо цвета
         float ratio = (currentBallSpeedMultiplier_ - minBallSpeedMultiplier_) /
             (maxBallSpeedMultiplier_ - minBallSpeedMultiplier_);
-        int red = 100 + static_cast<int>(155 * ratio);
-        ball_->setColor(sf::Color(red, 100, 100));
+        float scale = 1.0f + ratio * 0.2f; // Увеличиваем на 20% при максимальном ускорении
+        const_cast<sf::Sprite&>(ball_->getSprite()).setScale(scale, scale);
 
         ball_->setSpeedMultiplier(currentBallSpeedMultiplier_);
     }
@@ -302,12 +306,12 @@ void GameState::render() {
     // Отрисовка фона
     window_->draw(background_);
 
-    // Отрисовка блоков
+    // Отрисовка блоков (исправленный вариант)
     for (const auto& brick : bricks_) {
         brick->draw(*window_);
     }
 
-    // Отрисовка игровых объектов
+    // Отрисовка платформы и мяча
     window_->draw(platform_->getSprite());
     window_->draw(ball_->getSprite());
 

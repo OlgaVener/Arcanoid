@@ -30,7 +30,6 @@ void Ball::setTexture(const sf::Texture& texture) {
 }
 
 void Ball::setColor(const sf::Color& color) {
-    sprite_.setColor(color);
 }
 
 void Ball::update(float deltaTime) {
