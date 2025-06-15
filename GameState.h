@@ -4,7 +4,10 @@
 #include <vector>
 #include "Platform.h"
 #include "Ball.h"
-#include "Brick.h"
+#include "NormalBrick.h"
+#include "StrongBrick.h"
+#include "GlassBrick.h"
+
 #include "TextureManager.h"
 
 class GameState {
@@ -22,6 +25,7 @@ private:
     void centerText(sf::Text& text);
 
     // Игровая логика
+    std::vector<std::unique_ptr<Block>> bricks_;
     void handleEvents();
     void update(float deltaTime);
     void render();
@@ -36,7 +40,7 @@ private:
     void checkWallCollisions();
     void checkPlatformCollision();
     void checkBrickCollisions();
-    void handleBrickCollisionResponse(const Brick& brick);
+    void handleBrickCollisionResponse(const Block& brick);
 
     // Состояния игры
     void checkGameConditions();
@@ -61,7 +65,7 @@ private:
     std::unique_ptr<sf::RenderWindow> window_;
     std::unique_ptr<Platform> platform_;
     std::unique_ptr<Ball> ball_;
-    std::vector<std::unique_ptr<Brick>> bricks_;
+    std::vector<std::unique_ptr<Block>> blocks_;
 
     // Параметры игры
     bool gameWon_;

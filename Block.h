@@ -1,15 +1,24 @@
-#include "GameObject.h"
+#pragma once
+#include <SFML/Graphics.hpp>
+#include <memory>
 
-class Block : public GameObject {
+class Block {
+protected:
+    sf::Sprite sprite_;
+    int hitPoints_;
+    bool destroyed_;
+
 public:
-    Block(float x, float y, float width, float height, sf::Color color);
-    void Update(float deltaTime) override;
-    void Draw(sf::RenderWindow& window) override;
-    bool IsDestroyed() const;
-    void Destroy();
-    sf::FloatRect GetBounds() const;
+    Block();
+    virtual ~Block() = default;
 
-private:
-    bool isDestroyed;
-    sf::RectangleShape shape;
+    virtual void hit();
+    virtual bool isDestroyed() const;
+    virtual bool shouldBallBounce() const = 0;
+
+    void setPosition(float x, float y);
+    void setTexture(const sf::Texture& texture);
+
+    virtual void draw(sf::RenderWindow& window) const;
+    sf::FloatRect getBounds() const;
 };

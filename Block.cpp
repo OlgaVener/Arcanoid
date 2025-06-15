@@ -1,30 +1,32 @@
 #include "Block.h"
 
-Block::Block(float x, float y, float width, float height, sf::Color color)
-    : isDestroyed(false) {
-    shape.setPosition(x, y);
-    shape.setSize(sf::Vector2f(width, height));
-    shape.setFillColor(color);
-    shape.setOutlineThickness(1.f);
-    shape.setOutlineColor(sf::Color::White);
-}
+Block::Block() : hitPoints_(1), destroyed_(false) {}
 
-void Block::Update(float deltaTime) {}
-
-void Block::Draw(sf::RenderWindow& window) {
-    if (!isDestroyed) {
-        window.draw(shape);
+void Block::hit() {
+    if (--hitPoints_ <= 0) {
+        destroyed_ = true;
     }
 }
 
-bool Block::IsDestroyed() const {
-    return isDestroyed;
+bool Block::isDestroyed() const {
+    return destroyed_;
 }
 
-void Block::Destroy() {
-    isDestroyed = true;
+void Block::setPosition(float x, float y) {
+    sprite_.setPosition(x, y);
 }
 
-sf::FloatRect Block::GetBounds() const {
-    return shape.getGlobalBounds();
+void Block::setTexture(const sf::Texture& texture) {
+    sprite_.setTexture(texture);
+    sprite_.setColor(sf::Color::White);
+}
+
+void Block::draw(sf::RenderWindow& window) const {
+    if (!destroyed_) {
+        window.draw(sprite_);
+    }
+}
+
+sf::FloatRect Block::getBounds() const {
+    return sprite_.getGlobalBounds();
 }

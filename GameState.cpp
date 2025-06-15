@@ -195,27 +195,28 @@ void GameState::initBricks() {
 
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
-            Brick::Type type = Brick::Type::Normal;
-            std::string textureKey = "brick_normal";
+            std::unique_ptr<Block> brick;
 
             if (row == 0 && col % 3 == 0) {
-                type = Brick::Type::Strong;
-                textureKey = "brick_strong";
+                brick = std::make_unique<StrongBrick>();
+                brick->setTexture(textureManager.get("brick_strong"));
             }
             else if (row == 2 && col % 4 == 0) {
-                type = Brick::Type::Glass;
-                textureKey = "brick_glass";
+                brick = std::make_unique<GlassBrick>();
+                brick->setTexture(textureManager.get("brick_glass"));
+            }
+            else {
+                brick = std::make_unique<NormalBrick>();
+                brick->setTexture(textureManager.get("brick_normal"));
             }
 
-            auto brick = std::make_unique<Brick>();
-            brick->setPosition(startX + col * (width + 5.f), startY + row * (height + 5.f));
-            brick->setType(type);
-            brick->setTexture(textureManager.get(textureKey));
-
+            brick->setPosition(startX + col * (width + 5.f),
+                startY + row * (height + 5.f));
             bricks_.push_back(std::move(brick));
         }
     }
 }
+
 
 void GameState::checkCollisions() {
     checkWallCollisions();
@@ -262,7 +263,7 @@ void GameState::checkBrickCollisions() {
     }
 }
 
-void GameState::handleBrickCollisionResponse(const Brick& brick) {
+void GameState::handleBrickCollisionResponse(const Block& brick) {
     sf::FloatRect ballBounds = ball_->getGlobalBounds();
     sf::FloatRect brickBounds = brick.getBounds();
 
