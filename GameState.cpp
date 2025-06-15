@@ -33,11 +33,11 @@ void GameState::initialize() {
     loadResources();
     initGameObjects();
     setupText();
-}
-
-void GameState::setupWindow() {
-    window_->setFramerateLimit(60);
-    window_->setVerticalSyncEnabled(true);
+    setupScoreDisplay();
+    scoreSystem_.addObserver([this](int score) 
+    {
+        updateScoreDisplay(score);
+    });
 }
 
 void GameState::loadResources() {
@@ -72,6 +72,38 @@ void GameState::initGameObjects() {
 
     initBricks();
 }
+
+
+void GameState::setupScoreDisplay() {
+    scoreText_.setFont(font_);
+    scoreText_.setCharacterSize(24);
+    scoreText_.setFillColor(sf::Color::White);
+    scoreText_.setPosition(20, 20);
+
+    highscoreText_.setFont(font_);
+    highscoreText_.setCharacterSize(20);
+    highscoreText_.setFillColor(sf::Color::Yellow);
+    highscoreText_.setPosition(20, 50);
+
+    updateScoreDisplay(0);
+}
+
+void GameState::updateScoreDisplay(int score) {
+    scoreText_.setString("Score: " + std::to_string(score));
+
+    std::string highscoresStr = "Highscores:\n";
+    for (int hs : scoreSystem_.getHighscores()) {
+        highscoresStr += std::to_string(hs) + "\n";
+    }
+    highscoreText_.setString(highscoresStr);
+}
+
+
+void GameState::setupWindow() {
+    window_->setFramerateLimit(60);
+    window_->setVerticalSyncEnabled(true);
+}
+
 
 void GameState::setupText() {
     // Текст проигрыша
@@ -254,16 +286,28 @@ void GameState::checkBrickCollisions() {
         if (!brick->isDestroyed() && ball_->getGlobalBounds().intersects(brick->getBounds())) {
             brick->hit();
 
+            if (brick->isDestroyed()) {
+                if (dynamic_cast<NormalBrick*>(brick.get())) {
+                    scoreSystem_.addScore(ScoreSystem::BrickType::Normal);
+                }
+                else if (dynamic_cast<StrongBrick*>(brick.get())) {
+                    scoreSystem_.addScore(ScoreSystem::BrickType::Strong);
+                }
+                else if (dynamic_cast<GlassBrick*>(brick.get())) {
+                    scoreSystem_.addScore(ScoreSystem::BrickType::Glass);
+                }
+            }
+
             if (brick->shouldBallBounce()) {
                 handleBrickCollisionResponse(*brick);
             }
-
             break;
         }
     }
 }
 
-void GameState::handleBrickCollisionResponse(const Block& brick) {
+void GameState::handleBrickCollisionResponse(const Block& brick) 
+{
     sf::FloatRect ballBounds = ball_->getGlobalBounds();
     sf::FloatRect brickBounds = brick.getBounds();
 
@@ -281,13 +325,16 @@ void GameState::handleBrickCollisionResponse(const Block& brick) {
     if (fromTop || fromBottom) ball_->reverseY();
 }
 
-void GameState::checkGameConditions() {
+void GameState::checkGameConditions() 
+{
     checkLoseCondition();
     checkWinCondition();
 }
 
-void GameState::checkLoseCondition() {
-    if (ball_->getPosition().y - ball_->getRadius() > 600) {
+void GameState::checkLoseCondition() 
+{
+    if (ball_->getPosition().y - ball_->getRadius() > 600) 
+    {
         gameLost_ = true;
     }
 }
@@ -301,14 +348,20 @@ void GameState::checkWinCondition() {
     }
 }
 
-void GameState::render() {
+void GameState::render() 
+{
     window_->clear();
 
     // Отрисовка фона
     window_->draw(background_);
 
+    //Очки
+    window_->draw(scoreText_);
+    window_->draw(highscoreText_);
+
     // Отрисовка блоков (исправленный вариант)
-    for (const auto& brick : bricks_) {
+    for (const auto& brick : bricks_) 
+    {
         brick->draw(*window_);
     }
 
@@ -323,55 +376,72 @@ void GameState::render() {
     window_->display();
 }
 
-void GameState::showWinScreen() {
+void GameState::showWinScreen() 
+{
+    scoreSystem_.saveToHighscores();
     window_->clear();
     window_->draw(background_);
     window_->draw(winText_);
     window_->display();
 }
 
-void GameState::handleWinScreenInput() {
+void GameState::handleWinScreenInput() 
+{
     sf::Event event;
-    while (window_->pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
+    while (window_->pollEvent(event)) 
+    {
+        if (event.type == sf::Event::Closed) 
+        {
             window_->close();
         }
-        else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Y) {
+        else if (event.type == sf::Event::KeyPressed) 
+        {
+            if (event.key.code == sf::Keyboard::Y) 
+            {
                 resetGame();
             }
-            else if (event.key.code == sf::Keyboard::N) {
+            else if (event.key.code == sf::Keyboard::N) 
+            {
                 window_->close();
             }
         }
     }
 }
 
-void GameState::showLoseScreen() {
+void GameState::showLoseScreen() 
+{
+    scoreSystem_.saveToHighscores();
     window_->clear();
     window_->draw(background_);
     window_->draw(loseText_);
     window_->display();
 }
 
-void GameState::handleLoseScreenInput() {
+void GameState::handleLoseScreenInput() 
+{
     sf::Event event;
-    while (window_->pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
+    while (window_->pollEvent(event)) 
+    {
+        if (event.type == sf::Event::Closed) 
+        {
             window_->close();
         }
-        else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Y) {
+        else if (event.type == sf::Event::KeyPressed) 
+        {
+            if (event.key.code == sf::Keyboard::Y) 
+            {
                 resetGame();
             }
-            else if (event.key.code == sf::Keyboard::N) {
+            else if (event.key.code == sf::Keyboard::N) 
+            {
                 window_->close();
             }
         }
     }
 }
 
-void GameState::resetGame() {
+void GameState::resetGame() 
+{
     // Сброс состояния
     gameWon_ = false;
     gameLost_ = false;

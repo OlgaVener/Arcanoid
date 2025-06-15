@@ -7,7 +7,7 @@
 #include "NormalBrick.h"
 #include "StrongBrick.h"
 #include "GlassBrick.h"
-
+#include "ScoreSystem.h"
 #include "TextureManager.h"
 
 class GameState {
@@ -23,6 +23,8 @@ private:
     void initGameObjects();
     void setupText();
     void centerText(sf::Text& text);
+    void setupScoreDisplay();
+    void updateScoreDisplay(int score);
 
     // Игровая логика
     std::vector<std::unique_ptr<Block>> bricks_;
@@ -56,6 +58,9 @@ private:
 
     // Ресурсы
     static TextureManager textureManager;
+    ScoreSystem scoreSystem_;
+    sf::Text scoreText_;
+    sf::Text highscoreText_;
     sf::Font font_;
     sf::Text winText_;
     sf::Text loseText_;

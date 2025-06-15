@@ -42,6 +42,9 @@
     <ClInclude Include="GlassBrick.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScoreSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Block.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScoreSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
